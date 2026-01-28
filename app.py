@@ -35,11 +35,27 @@ def handle_connect():
 
 def generate_frames():
     cap = cv2.VideoCapture(0)
+
+    # 🔴 ADD THIS BLOCK EXACTLY HERE
+    if not cap.isOpened():
+        print("❌ Camera not accessible")
+        return
+    else:
+        print("✅ Camera opened successfully")
+    # 🔴 END OF ADDITION
+
     mp_hands = mp.solutions.hands
     mp_drawing = mp.solutions.drawing_utils
     mp_drawing_styles = mp.solutions.drawing_styles
 
-    hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
+
+    hands = mp_hands.Hands(
+    static_image_mode=False,
+    max_num_hands=1,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+)
+
 
     labels_dict = {
         0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J',
@@ -55,6 +71,7 @@ def generate_frames():
         y_ = []
 
         ret, frame = cap.read()
+        print("Frame captured")
         if not ret:
             break
 
@@ -65,6 +82,7 @@ def generate_frames():
 
         results = hands.process(frame_rgb)
         if results.multi_hand_landmarks:
+            print("✋ Hand detected")
             for hand_landmarks in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
                     frame,
@@ -110,7 +128,10 @@ def generate_frames():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(
+        generate_frames(),
+        mimetype='multipart/x-mixed-replace; boundary=frame'
+    )
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

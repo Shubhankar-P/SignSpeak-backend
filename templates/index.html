@@ -40,12 +40,7 @@
             background: #fff !important;
         }
 
-        .navbar-brand span {
-            font-weight: 600;
-            color: #000;
-        }
-
-        /* Hero Section */
+        /* Hero */
         .hero {
             min-height: 100vh;
             display: flex;
@@ -63,26 +58,32 @@
             max-width: 520px;
         }
 
-        /* Video Card */
+        /* Card */
+        .glass-card {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(14px);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 1rem;
+        }
+
+        /* Carousel */
+        .carousel img {
+            border-radius: var(--radius);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        /* Video */
         .video-card {
             background: #000;
             border-radius: var(--radius);
             overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
         }
 
         .video-card img {
             width: 100%;
             display: block;
-        }
-
-        /* Controls */
-        .controls input {
-            border-radius: var(--radius);
-        }
-
-        .controls button {
-            border-radius: var(--radius);
         }
 
         /* Section */
@@ -92,14 +93,12 @@
             color: #000;
         }
 
-        /* Profile Cards */
         .profile-card {
             background: #fff;
             border-radius: var(--radius);
             padding: 1.5rem;
             text-align: center;
             transition: transform 0.3s ease;
-            height: 100%;
         }
 
         .profile-card:hover {
@@ -109,21 +108,15 @@
         .profile-card img {
             width: 140px;
             height: 140px;
-            object-fit: cover;
             border-radius: 50%;
+            object-fit: cover;
             margin-bottom: 1rem;
         }
 
-        /* Footer */
         footer {
             background: #111;
             color: #ccc;
             padding: 20px 0;
-        }
-
-        footer a {
-            color: #ccc;
-            text-decoration: none;
         }
     </style>
 </head>
@@ -135,7 +128,7 @@
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="#">
             <img src="https://bcebakhtiyarpur.ac.in/wp-content/uploads/2019/01/logo-bced-f.png" height="50" class="me-2">
-            <span>Bakhtiyarpur College of Engineering</span>
+            <span class="fw-semibold text-dark">Vidyalankar Institute of Technology</span>
         </a>
     </div>
 </nav>
@@ -149,9 +142,32 @@
             <div class="col-lg-6 text-center text-lg-start">
                 <span class="badge bg-primary mb-3">Live AI Translation</span>
                 <h1 class="hero-title">Sign Language to Text</h1>
-                <p class="hero-subtitle">
+                <p class="hero-subtitle mb-4">
                     Real-time American Sign Language recognition using computer vision and deep learning.
                 </p>
+
+                <!-- IMAGE CAROUSEL (RESTORED) -->
+                <div id="signCarousel" class="carousel slide glass-card" data-bs-interval="false">
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img src="https://raw.githubusercontent.com/uzibytes/Sign2Text/master/hand-signs-of-the-ASL-Language.png"
+                                 class="d-block w-100"
+                                 alt="ASL Hand Signs">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://i.ibb.co/ZJ7858c/customsl.jpg"
+                                 class="d-block w-100"
+                                 alt="Custom Sign Language">
+                        </div>
+                    </div>
+
+                    <button class="carousel-control-prev" type="button" data-bs-target="#signCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#signCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                </div>
             </div>
 
             <!-- RIGHT -->
@@ -160,15 +176,12 @@
                     <img src="{{ url_for('video_feed') }}" alt="Live sign language camera feed">
                 </div>
 
-                <div class="controls">
-                    <input type="text" id="translatedText" class="form-control mb-2"
-                           placeholder="Translated text will appear here"
-                           aria-label="Translated sign language text">
+                <input type="text" id="translatedText" class="form-control mb-2"
+                       placeholder="Translated text will appear here">
 
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-outline-danger w-50" id="resetButton">Reset</button>
-                        <button class="btn btn-primary w-50" id="speakButton">Speak</button>
-                    </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-danger w-50" id="resetButton">Reset</button>
+                    <button class="btn btn-primary w-50" id="speakButton">Speak</button>
                 </div>
             </div>
 
@@ -176,7 +189,7 @@
     </div>
 </section>
 
-<!-- PROJECT GUIDE -->
+<!-- GUIDE -->
 <section class="section text-center">
     <div class="container">
         <h2 class="mb-5">Project Guide</h2>
@@ -184,8 +197,8 @@
             <div class="col-md-4">
                 <div class="profile-card">
                     <img src="https://raw.githubusercontent.com/krishnaraj12/project/main/img/Shashi.png">
-                    <h5>Dr. Shashi Raj</h5>
-                    <p>Department of CSE</p>
+                    <h5>Dr. Atul Oak</h5>
+                    <p>Department of EXTC</p>
                 </div>
             </div>
         </div>
@@ -201,8 +214,8 @@
             <div class="col-md-6 col-lg-3">
                 <div class="profile-card">
                     <img src="https://raw.githubusercontent.com/krishnaraj12/project/main/img/krishna.png">
-                    <h6>Krishna Raj</h6>
-                    <p>20105126040</p>
+                    <h6>Shubhankar Potnis</h6>
+                    <p>22104A0029</p>
                     <a href="https://www.linkedin.com/in/iamkrishnaraj/" target="_blank">
                         <i class="fab fa-linkedin fa-lg"></i>
                     </a>
@@ -212,24 +225,24 @@
             <div class="col-md-6 col-lg-3">
                 <div class="profile-card">
                     <img src="https://raw.githubusercontent.com/krishnaraj12/project/main/img/ujjwal.png">
-                    <h6>Ujjwal Raj</h6>
-                    <p>20105126034</p>
+                    <h6>Aishwarya Pawar</h6>
+                    <p>22104B0054</p>
                 </div>
             </div>
 
             <div class="col-md-6 col-lg-3">
                 <div class="profile-card">
                     <img src="https://raw.githubusercontent.com/krishnaraj12/project/main/img/puri3.png">
-                    <h6>Rajnish Puri</h6>
-                    <p>20105126031</p>
+                    <h6>Aayush Samanta</h6>
+                    <p>22104A0029</p>
                 </div>
             </div>
 
             <div class="col-md-6 col-lg-3">
                 <div class="profile-card">
-                    <img src="https://raw.githubusercontent.com/krishnaraj12/project/main/img/prasa.png">
-                    <h6>Prashant Raj</h6>
-                    <p>20105126043</p>
+                    <img src="\img\shubh.jpg">
+                    <h6>Riddhi Welekar</h6>
+                    <p>22104A0029</p>
                 </div>
             </div>
 
@@ -242,10 +255,10 @@
     <div class="container">
         <div class="row text-center text-md-start">
             <div class="col-md-4">
-                © 2024 Bihar Engineering University
+                © 2026 Vidyalankar Institute of Technology
             </div>
             <div class="col-md-4 text-center">
-                <a href="https://github.com/uzibytes/sign2text" target="_blank">
+                <a href="https://github.com/aish-pawar0111/Sign2text_backend" target="_blank">
                     <i class="fab fa-github me-1"></i> Source Code
                 </a>
             </div>
@@ -256,7 +269,8 @@
     </div>
 </footer>
 
-<!-- Bootstrap JS -->
+
+<!-- Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -274,11 +288,8 @@
     document.getElementById("speakButton").onclick = () => {
         const text = translatedText.value.trim();
         if (!text) return;
-
         speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.95;
-        speechSynthesis.speak(utterance);
+        speechSynthesis.speak(new SpeechSynthesisUtterance(text));
     };
 </script>
 
