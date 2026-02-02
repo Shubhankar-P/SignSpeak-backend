@@ -2,136 +2,146 @@
 # source venv/bin/activate
 # pip install -r requirements.txt
 
-from flask import Flask, render_template, Response
-from flask_socketio import SocketIO, emit
+from flask import Flask, render_template
+from flask_socketio import SocketIO
 import pickle
 import cv2
 import mediapipe as mp
 import numpy as np
 import warnings
+import base64
 
-# Suppress specific warnings
-warnings.filterwarnings("ignore", message="SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead.")
+# --------------------------------------------------
+# Warnings
+# --------------------------------------------------
+warnings.filterwarnings(
+    "ignore",
+    message="SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead."
+)
 
-
+# --------------------------------------------------
+# Flask + Socket.IO setup
+# --------------------------------------------------
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
+# --------------------------------------------------
+# Load ML model ONCE
+# --------------------------------------------------
 try:
     model_dict = pickle.load(open('./model.p', 'rb'))
     model = model_dict['model']
+    print("✅ Model loaded successfully")
 except Exception as e:
-    print("Error loading the model:", e)
+    print("❌ Error loading the model:", e)
     model = None
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@socketio.on('connect')
-def handle_connect():
-    print('Client connected')
-
-def generate_frames():
-    cap = cv2.VideoCapture(0)
-
-    # 🔴 ADD THIS BLOCK EXACTLY HERE
-    if not cap.isOpened():
-        print("❌ Camera not accessible")
-        return
-    else:
-        print("✅ Camera opened successfully")
-    # 🔴 END OF ADDITION
-
-    mp_hands = mp.solutions.hands
-    mp_drawing = mp.solutions.drawing_utils
-    mp_drawing_styles = mp.solutions.drawing_styles
-
-
-    hands = mp_hands.Hands(
+# --------------------------------------------------
+# Initialize MediaPipe ONCE  (CRITICAL FIX)
+# --------------------------------------------------
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(
     static_image_mode=False,
     max_num_hands=1,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
 
+# --------------------------------------------------
+# Labels dictionary ONCE  (CRITICAL FIX)
+# --------------------------------------------------
+labels_dict = {
+    0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H',
+    8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M', 13: 'N', 14: 'O',
+    15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U',
+    21: 'V', 22: 'W', 23: 'X', 24: 'Y', 25: 'Z', 26: 'Hello',
+    27: 'Done', 28: 'Thank You', 29: 'I Love you', 30: 'Sorry',
+    31: 'Please', 32: 'You are welcome.'
+}
 
-    labels_dict = {
-        0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J',
-        10: 'K', 11: 'L', 12: 'M', 13: 'N', 14: 'O', 15: 'P', 16: 'Q', 17: 'R', 18: 'S',
-        19: 'T', 20: 'U', 21: 'V', 22: 'W', 23: 'X', 24: 'Y', 25: 'Z', 26: 'Hello',
-        27: 'Done', 28: 'Thank You', 29: 'I Love you', 30: 'Sorry', 31: 'Please',
-        32: 'You are welcome.'
-    }
+# --------------------------------------------------
+# Routes
+# --------------------------------------------------
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-    while True:
-        data_aux = []
-        x_ = []
-        y_ = []
+@socketio.on('connect')
+def handle_connect():
+    print("🔗 Client connected")
 
-        ret, frame = cap.read()
-        print("Frame captured")
-        if not ret:
-            break
+# --------------------------------------------------
+# Receive frame from frontend
+# --------------------------------------------------
+@socketio.on('frame')
+def handle_frame(data):
+    try:
+        # Decode base64 image
+        encoded = data.split(',')[1]
+        img_bytes = base64.b64decode(encoded)
+        np_arr = np.frombuffer(img_bytes, np.uint8)
+        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        frame = cv2.flip(frame, 1)  # Flip the frame horizontally
+        if frame is None:
+            return
 
-        H, W, _ = frame.shape
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # Mirror view
+        frame = cv2.flip(frame, 1)
 
-        results = hands.process(frame_rgb)
-        if results.multi_hand_landmarks:
-            print("✋ Hand detected")
-            for hand_landmarks in results.multi_hand_landmarks:
-                mp_drawing.draw_landmarks(
-                    frame,
-                    hand_landmarks,
-                    mp_hands.HAND_CONNECTIONS,
-                    mp_drawing_styles.get_default_hand_landmarks_style(),
-                    mp_drawing_styles.get_default_hand_connections_style()
-                )
+        process_frame(frame)
 
-                for i in range(len(hand_landmarks.landmark)):
-                    x = hand_landmarks.landmark[i].x
-                    y = hand_landmarks.landmark[i].y
-                    x_.append(x)
-                    y_.append(y)
+    except Exception as e:
+        print("Frame handling error:", e)
 
-                for i in range(len(hand_landmarks.landmark)):
-                    x = hand_landmarks.landmark[i].x
-                    y = hand_landmarks.landmark[i].y
-                    data_aux.append(x - min(x_))
-                    data_aux.append(y - min(y_))
+# --------------------------------------------------
+# Process ONE frame only (NO loops, NO camera)
+# --------------------------------------------------
+def process_frame(frame):
+    if model is None:
+        return
 
-                x1 = int(min(x_) * W) - 10
-                y1 = int(min(y_) * H) - 10
-                x2 = int(max(x_) * W) - 10
-                y2 = int(max(y_) * H) - 10
+    data_aux = []
+    x_ = []
+    y_ = []
 
-                try:
-                    prediction = model.predict([np.asarray(data_aux)])
-                    prediction_proba = model.predict_proba([np.asarray(data_aux)])
-                    confidence = max(prediction_proba[0])  # Get the highest confidence score
-                    predicted_character = labels_dict[int(prediction[0])]
-                    
-                    socketio.emit('prediction', {'text': predicted_character, 'confidence': confidence})
-                    
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 0), 4)
-                    cv2.putText(frame, f"{predicted_character} ({confidence*100:.2f}%)", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 0, 0), 3, cv2.LINE_AA)
-                except Exception as e:
-                    pass
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    results = hands.process(frame_rgb)
 
-        ret, buffer = cv2.imencode('.jpg', frame)
-        frame = buffer.tobytes()
-        yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    if not results.multi_hand_landmarks:
+        return
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(
-        generate_frames(),
-        mimetype='multipart/x-mixed-replace; boundary=frame'
-    )
+    for hand_landmarks in results.multi_hand_landmarks:
 
+        for lm in hand_landmarks.landmark:
+            x_.append(lm.x)
+            y_.append(lm.y)
+
+        for lm in hand_landmarks.landmark:
+            data_aux.append(lm.x - min(x_))
+            data_aux.append(lm.y - min(y_))
+
+        try:
+            prediction = model.predict([np.asarray(data_aux)])
+            prediction_proba = model.predict_proba([np.asarray(data_aux)])
+            confidence = float(max(prediction_proba[0]))
+
+            predicted_character = labels_dict[int(prediction[0])]
+
+            socketio.emit(
+                'prediction',
+                {
+                    'text': predicted_character,
+                    'confidence': confidence
+                }
+            )
+
+        except Exception as e:
+            print("Prediction error:", e)
+
+# --------------------------------------------------
+# Main
+# --------------------------------------------------
 if __name__ == '__main__':
     socketio.run(app, debug=True)
+
