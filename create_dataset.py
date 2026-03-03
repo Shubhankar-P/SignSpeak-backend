@@ -42,9 +42,11 @@ for dir_ in os.listdir(DATA_DIR):
                 for i in range(len(hand_landmarks.landmark)):
                     x = hand_landmarks.landmark[i].x
                     y = hand_landmarks.landmark[i].y
+                    z = hand_landmarks.landmark[i].z
 
                     x_.append(x)
                     y_.append(y)
+                    
 
                 # Debugging prints to check lengths of coordinates
                 print("Length of x_:", len(x_))
@@ -54,8 +56,11 @@ for dir_ in os.listdir(DATA_DIR):
                 for i in range(len(hand_landmarks.landmark)):
                     x = hand_landmarks.landmark[i].x
                     y = hand_landmarks.landmark[i].y
+                    z = hand_landmarks.landmark[i].z
+
                     data_aux.append(x - min(x_))
                     data_aux.append(y - min(y_))
+                    data_aux.append(z)  # add depth directly
 
             # Add the processed data and label to their respective lists
             data.append(data_aux)

@@ -3,10 +3,12 @@ import pickle  # Module for serializing and deserializing Python objects
 import cv2  # OpenCV for video capture and image processing
 import mediapipe as mp  # MediaPipe for hand detection and landmark processing
 import numpy as np  # NumPy for array and numerical operations
+from collections import deque, Counter
 
 # Load the pre-trained model from a pickle file
 model_dict = pickle.load(open('./model.p', 'rb'))
 model = model_dict['model']
+prediction_buffer = deque(maxlen=20)
 
 # Initialize video capture from the default camera (index 0)
 cap = cv2.VideoCapture(0)
@@ -54,6 +56,7 @@ while True:
             for i in range(len(hand_landmarks.landmark)):
                 x = hand_landmarks.landmark[i].x
                 y = hand_landmarks.landmark[i].y
+                z = hand_landmarks.landmark[i].z
 
                 x_.append(x)
                 y_.append(y)
@@ -62,8 +65,11 @@ while True:
             for i in range(len(hand_landmarks.landmark)):
                 x = hand_landmarks.landmark[i].x
                 y = hand_landmarks.landmark[i].y
+                z = hand_landmarks.landmark[i].z
+
                 data_aux.append(x - min(x_))
                 data_aux.append(y - min(y_))
+                data_aux.append(z)
 
         # Calculate bounding box coordinates for the hand landmarks
         x1 = int(min(x_) * W) - 10
@@ -73,13 +79,23 @@ while True:
 
     try:
         # Predict the sign using the pre-trained model
-        prediction = model.predict([np.asarray(data_aux)])
-        predicted_character = labels_dict[int(prediction[0])]
-        print("Predicted character : ", predicted_character)
+       if len(data_aux) == 63:  # only predict if full hand detected
+          prediction = model.predict([np.asarray(data_aux)])
+          predicted_character = labels_dict[int(prediction[0])]
 
-        # Draw a bounding box and label around the detected hand
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 0), 4)
-        cv2.putText(frame, predicted_character, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 0, 0), 3, cv2.LINE_AA)
+          prediction_buffer.append(predicted_character)
+
+        # Majority voting
+          if len(prediction_buffer) == 20:
+             final_prediction = Counter(prediction_buffer).most_common(1)[0][0]
+          else:
+             final_prediction = predicted_character
+
+          print("Predicted character : ", final_prediction)
+
+          cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 0), 4)
+          cv2.putText(frame, final_prediction, (x1, y1 - 10),
+                cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 0, 0), 3, cv2.LINE_AA)
 
     except Exception as e:
         # Handle exceptions that might occur during prediction

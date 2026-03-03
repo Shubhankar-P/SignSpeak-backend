@@ -15,19 +15,17 @@ data = np.asarray(data_dict['data'])
 labels = np.asarray(data_dict['labels'])
 
 # Flatten the data and ensure landmarks are structured as arrays
-data_flattened = []
-for d in data:
-    flattened_landmarks = np.concatenate([landmark.reshape(-1) for landmark in d])
-    data_flattened.append(flattened_landmarks)
-
-# Convert the flattened data to a numpy array
-data_flattened = np.array(data_flattened)
+data_flattened = np.array(data)
 
 # Split data into training and testing sets
 x_train, x_test, y_train, y_test = train_test_split(data_flattened, labels, test_size=0.2, shuffle=True, stratify=labels)
 
 # Initialize the RandomForestClassifier
-model = RandomForestClassifier()
+model = RandomForestClassifier(
+    n_estimators=200,
+    max_depth=20,
+    random_state=42
+)
 
 # Train the model
 model.fit(x_train, y_train)
