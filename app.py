@@ -14,6 +14,7 @@ import mediapipe as mp
 import numpy as np
 import warnings
 import base64
+from collections import deque
 
 # --------------------------------------------------
 # Warnings
@@ -66,6 +67,11 @@ labels_dict = {
 }
 
 # --------------------------------------------------
+# Prediction smoothing buffer
+# --------------------------------------------------
+pred_buffer = deque(maxlen=5)
+
+# --------------------------------------------------
 # Routes
 # --------------------------------------------------
 @app.route('/')
@@ -93,7 +99,7 @@ def handle_frame(data):
             return
 
         # Mirror view
-        frame = cv2.flip(frame, 1)
+       # frame = cv2.flip(frame, 1)
 
         process_frame(frame)
 
@@ -134,10 +140,16 @@ def process_frame(frame):
 
             predicted_character = labels_dict[int(prediction[0])]
 
+            # Add prediction to buffer
+            pred_buffer.append(predicted_character)
+
+            # Get most common prediction in last 5 frames
+            final_prediction = max(set(pred_buffer), key=pred_buffer.count)
+
             socketio.emit(
                 'prediction',
                 {
-                    'text': predicted_character,
+                    'text': final_prediction,
                     'confidence': confidence
                 }
             )
