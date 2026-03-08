@@ -25,3 +25,10 @@ __pycache__/
 
 # Logs
 *.log
+
+venv/
+__pycache__/
+data/
+*.csv
+*.pkl
+.ipynb_checkpoints/
