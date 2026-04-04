@@ -1,5 +1,5 @@
-# python -m venv venv
-# source venv/bin/activate
+# py -3.10 -m venv venv
+# pipvenv\Scripts\activate
 # pip install -r requirements.txt
 # 
 
@@ -132,6 +132,7 @@ def process_frame(frame):
         for lm in hand_landmarks.landmark:
             data_aux.append(lm.x - min(x_))
             data_aux.append(lm.y - min(y_))
+            data_aux.append(lm.z) 
 
         try:
             prediction = model.predict([np.asarray(data_aux)])

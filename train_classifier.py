@@ -18,7 +18,7 @@ labels = np.asarray(data_dict['labels'])
 data_flattened = np.array(data)
 
 # Split data into training and testing sets
-x_train, x_test, y_train, y_test = train_test_split(data_flattened, labels, test_size=0.2, shuffle=True, stratify=labels)
+x_train, x_test, y_train, y_test = train_test_split(data_flattened, labels, test_size=0.2, shuffle=True, stratify=labels, random_state=42)
 
 # Initialize the RandomForestClassifier
 model = RandomForestClassifier(

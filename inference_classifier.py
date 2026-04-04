@@ -82,10 +82,9 @@ while True:
        if len(data_aux) == 63:  # only predict if full hand detected
           prediction = model.predict([np.asarray(data_aux)])
           predicted_character = labels_dict[int(prediction[0])]
-
           prediction_buffer.append(predicted_character)
 
-        # Majority voting
+          # Majority voting
           if len(prediction_buffer) == 20:
              final_prediction = Counter(prediction_buffer).most_common(1)[0][0]
           else:

@@ -1,5 +1,4 @@
 # Import necessary modules
-from flask import Blueprint  # Flask Blueprint for creating modular code
 import os  # Operating system interface for file and directory management
 import cv2  # OpenCV for video capture and image processing
 
