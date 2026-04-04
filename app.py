@@ -69,7 +69,7 @@ labels_dict = {
 # --------------------------------------------------
 # Prediction smoothing buffer
 # --------------------------------------------------
-pred_buffer = deque(maxlen=5)
+pred_buffer = deque(maxlen=3)
 
 # --------------------------------------------------
 # Routes
@@ -143,7 +143,7 @@ def process_frame(frame):
 
             # Add prediction to buffer
             pred_buffer.append(predicted_character)
-
+            
             # Get most common prediction in last 5 frames
             final_prediction = max(set(pred_buffer), key=pred_buffer.count)
 
