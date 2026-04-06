@@ -13,6 +13,11 @@ from sklearn.metrics import (
     matthews_corrcoef
 )
 
+import time
+import os
+RESULTS_DIR = "evaluation_results"
+os.makedirs(RESULTS_DIR, exist_ok=True)
+
 # ── Load data.pickle and model.p ────────────────────────────────────────────
 print("Loading data and model...")
 data_dict = pickle.load(open('./data.pickle', 'rb'))
@@ -28,6 +33,15 @@ x_train, x_test, y_train, y_test = train_test_split(
 )
 
 y_predict = model.predict(x_test)
+
+times = []
+for sample in x_test:
+    start = time.perf_counter()
+    model.predict([sample])
+    times.append(time.perf_counter() - start)
+
+print(f"Avg Inference Time : {np.mean(times)*1000:.3f} ms")
+print(f"Max Inference Time : {np.max(times)*1000:.3f} ms")
 
 # ════════════════════════════════════════════════════════════════════════════
 # TEST 1 — Accuracy + Classification Report (Precision, Recall, F1)
@@ -45,8 +59,8 @@ print(classification_report(y_test, y_predict))
 # Save as CSV
 report_dict = classification_report(y_test, y_predict, output_dict=True)
 df_report = pd.DataFrame(report_dict).transpose()
-df_report.to_csv("classification_report.csv")
-print("Saved → classification_report.csv")
+df_report.to_csv(os.path.join(RESULTS_DIR, "classification_report.csv"))
+print("Saved → evaluation_results/classification_report.csv")
 
 # ════════════════════════════════════════════════════════════════════════════
 # TEST 2 — Confusion Matrix
@@ -61,9 +75,9 @@ disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_
 fig, ax = plt.subplots(figsize=(14, 14))
 disp.plot(ax=ax, cmap='Blues', colorbar=False)
 plt.title("Confusion Matrix — SignSpeak Classifier")
-plt.savefig("confusion_matrix.png", dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(RESULTS_DIR, "confusion_matrix.png"), dpi=300, bbox_inches='tight')
 plt.close()
-print("Saved → confusion_matrix.png")
+print("Saved → evaluation_results/confusion_matrix.png")
 
 # ════════════════════════════════════════════════════════════════════════════
 # TEST 3 — K-Fold Cross Validation
@@ -110,9 +124,9 @@ plt.ylabel("Accuracy")
 plt.title("Learning Curve — SignSpeak Classifier")
 plt.legend()
 plt.grid(True)
-plt.savefig("learning_curve.png", dpi=300)
+plt.savefig(os.path.join(RESULTS_DIR, "learning_curve.png"), dpi=300)
 plt.close()
-print("Saved → learning_curve.png")
+print("Saved → evaluation_results/learning_curve.png")
 
 # ════════════════════════════════════════════════════════════════════════════
 # TEST 5 — Feature Importance
@@ -130,9 +144,9 @@ plt.title("Feature Importances — Random Forest (SignSpeak)")
 plt.xlabel("Landmark Feature Index")
 plt.ylabel("Importance Score")
 plt.tight_layout()
-plt.savefig("feature_importance.png", dpi=300)
+plt.savefig(os.path.join(RESULTS_DIR, "feature_importance.png"), dpi=300)
 plt.close()
-print("Saved → feature_importance.png")
+print("Saved → evaluation_results/feature_importance.png")
 
 # ════════════════════════════════════════════════════════════════════════════
 print("\n✅ All tests complete. Files saved in your project folder.")

@@ -1,10 +1,9 @@
-# py -3.10 -m venv venv
-# pipvenv\Scripts\activate
-# pip install -r requirements.txt
-# 
+# For windows:
+# 1) py -3.10 -m venv venv
+# 2) venv\Scripts\activate
+# 3) pip install -r requirements.txt
+# 4) python app.py 
 
-#import eventlet
-#eventlet.monkey_patch()
 
 from flask import Flask, render_template
 from flask_socketio import SocketIO
