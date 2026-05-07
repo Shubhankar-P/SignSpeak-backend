@@ -14,6 +14,7 @@ import numpy as np
 import warnings
 import base64
 from collections import deque
+import threading       
 
 # --------------------------------------------------
 # Warnings
@@ -52,6 +53,7 @@ hands = mp_hands.Hands(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
+hands_lock = threading.Lock()
 
 # --------------------------------------------------
 # Labels dictionary ONCE  (CRITICAL FIX)
@@ -117,7 +119,9 @@ def process_frame(frame):
     y_ = []
 
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = hands.process(frame_rgb)
+
+    with hands_lock:   
+     results = hands.process(frame_rgb)
 
     if not results.multi_hand_landmarks:
         return
