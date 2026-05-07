@@ -75,7 +75,7 @@ SignSpeak-backend/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/SignSpeak-backend.git
+git clone https://github.com/Shubhankar-P/SignSpeak-backend.git
 cd SignSpeak-backend
 ```
 
