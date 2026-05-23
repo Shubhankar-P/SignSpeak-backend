@@ -144,6 +144,20 @@ ngrok http 5000
 
 Copy the generated URL into your Android app's `local.properties` as `BACKEND_URL`.
 
+### ☁️ Cloud Deployment (Recommended for Persistent Use)
+
+For a stable public URL without ngrok, deploy the Flask server to a free cloud platform:
+
+**Render (recommended)**
+1. Push this repo to GitHub (already done)
+2. Go to [render.com](https://render.com) → New → Web Service
+3. Connect your GitHub repo
+4. Set build command: `pip install -r requirements.txt`
+5. Set start command: `python app.py`
+6. Copy the generated `https://your-app.onrender.com` URL into `local.properties` as `BACKEND_URL`
+
+> **Note:** Free-tier Render instances spin down after inactivity. For always-on usage, upgrade or use a paid tier.
+
 ---
 
 ## Dataset
